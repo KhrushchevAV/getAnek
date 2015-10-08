@@ -13,14 +13,14 @@ use HTTP::Request;
 my($url) = 'http://www.anekdot.ru/last/j.html';
 my(@html);
 my($pr) = 0;
-my($recip) = '<nvimc@mail.ru>, <NetSveta@upb.ru>, <hrushev.av@kubank.ru>';
+my($recip) = '<nvimc@mail.ru>, <NetSveta@upb.ru>, <hrushev.av@kubank.ru>, <root@copy-news.ru>';
 
 
 #-----------------
 if (GetHtml())
 {
-  open(HTML,"<anek.html") || die "can't open anek.html\n";
-  open(RES,">a.txt");
+  open(HTML,"</root/Anek/anek.html") || die "can't open /root/Anek/anek.html\n";
+  open(RES,">/root/Anek/a.txt");
   print RES "To: $recip\n";
   print RES "Subject: :-)\n";
   print RES "From: anekdot\@upb.ru\n";
@@ -46,11 +46,17 @@ if (GetHtml())
     }
 
   }
+
   close(RES);
   close(HTML);
 }
-#system('c:\usr\lib\sendmail -t <a.txt');
-system('sendmail <a.txt');
+#system('c:\usr\lib\sendmail -t </root/Anek/a.txt');
+
+#Конвертируем из UTF-8 в WIN1251
+system('iconv -f UTF-8 -t Windows-1251 /root/Anek/a.txt > /root/Anek/b.txt');
+system('/usr/sbin/sendmail -t </root/Anek/b.txt');
+
+#system('sendmail </root/Anek/a.txt');
 
 
 
@@ -60,10 +66,11 @@ sub GetHtml
 {
   $lwp = LWP::UserAgent->new;
 #  $lwp->proxy(['http','ftp'],'http://proxy:8080/');
-#  $lwp->credentials('','','sys','pwd');
-#  $r = HTTP::Request->new(GET => "$url");
-#  $r->proxy_authorization_basic('sys','pwd');
-  $response = $lwp->request($r);        
+#  $lwp->credentials('','','up_bank\sys','bynthytnnhfabr');
+  $r = HTTP::Request->new(GET => "$url");
+#  $r->proxy_authorization_basic('sys','bynthytnnhfabr');
+  $response = $lwp->request($r);
+
   if ($response->is_success)
   {
     @html = $response->content;
@@ -73,7 +80,7 @@ sub GetHtml
     @html = $response->error_as_HTML;
   }
 
-  open(HTML,">anek.html") || die "can't open anek.html\n";
+  open(HTML,">/root/Anek/anek.html") || die "can't open /root/Anek/anek.html\n";
 
   foreach (@html) {
     s/<div/\n<div/gi;
@@ -84,5 +91,3 @@ sub GetHtml
   close(HTML);
   return $response->is_success;
 }
-
-

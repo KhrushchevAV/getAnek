@@ -12,18 +12,19 @@ use HTTP::Request;
 my($url) = 'http://www.anekdot.ru/last/j.html';
 my(@html);
 my($pr) = 0;
-my($recip) = '<nvimc@mail.ru>, <sed@upb.ru>, <urasov@upb.ru>, <vedenina@upb.ru>, <ermakov@ipae.uran.ru>, <NetSveta@upb.ru>, <gaz@upb.ru>, <grishins@inbox.ru>, <slava@upb.ru>, <av@upb.ru>';
-#my($recip) = '<av@upb.ru>';
+#my($recip) = '<hrushev.av@kubank.ru>, <NetSveta@upb.ru>, <slava@upb.ru>, <zhuravlevaoa@ektb.vtb24.ru>, <root@copy-news.ru>';
+my($recip) = '<hrushev.av@kubank.ru>, <NetSveta@upb.ru>, <root@copy-news.ru>';
+#my($recip) = '<root@copy-news.ru>';
 
 
 #-----------------
 if (GetHtml())
 {
-  open(HTML,"<anek.html") || die "can't open anek.html\n";
-  open(RES,">a.txt");
+  open(HTML,"</root/Anek/anek.html") || die "can't open /root/Anek/anek.html\n";
+  open(RES,">/root/Anek/a.txt");
   print RES "To: $recip\n";
   print RES "Subject: :-)\n";
-  print RES "From: av\@upb.ru\n";
+  print RES "From: anekdot\@upb.ru\n";
   print RES "MIME-Version: 1.0\n";
   print RES "Content-Transfer-Encoding: 8bit\n";
   print RES 'Content-Type: text/plain; charset="Windows-1251"' . "\n\n";
@@ -62,11 +63,17 @@ if (GetHtml())
       print RES "$_";
     }
   }
+
   close(RES);
   close(HTML);
 }
-#system('c:\usr\lib\sendmail -t <a.txt');
-system('sendmail <a.txt');
+#system('c:\usr\lib\sendmail -t </root/Anek/a.txt');
+
+#Конвертируем из UTF-8 в WIN1251
+system('iconv -f UTF-8 -t Windows-1251 /root/Anek/a.txt > /root/Anek/b.txt');
+system('/usr/sbin/sendmail -t </root/Anek/b.txt');
+
+#system('sendmail </root/Anek/a.txt');
 
 
 sub ParseOneStr {
@@ -80,7 +87,7 @@ sub GetHtml
   $lwp = LWP::UserAgent->new;
 #  $lwp->proxy(['http','ftp'],'http://proxy:8080/');
 #  $lwp->credentials('','','up_bank\sys','bynthytnnhfabr');
-#  $r = HTTP::Request->new(GET => "$url");
+  $r = HTTP::Request->new(GET => "$url");
 #  $r->proxy_authorization_basic('sys','bynthytnnhfabr');
   $response = $lwp->request($r);
   if ($response->is_success)
@@ -92,7 +99,7 @@ sub GetHtml
     @html = $response->error_as_HTML;
   }
 
-  open(HTML,">anek.html") || die "can't open anek.html\n";
+  open(HTML,">/root/Anek/anek.html") || die "can't open /root/Anek/anek.html\n";
 
   foreach (@html) {
     s/<div/\n<div/gi;
